@@ -8,7 +8,6 @@
 import java.awt.Color;
 
 class Gate {
-
     Semaphore g = new Semaphore(0);
     Semaphore e = new Semaphore(1);
     boolean isopen = false;
@@ -36,7 +35,7 @@ class Gate {
 }
 
 class Car extends Thread {
-
+	
     int basespeed = 100;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
 
@@ -54,7 +53,7 @@ class Car extends Thread {
     Pos newpos;                      // New position to go to
 
     public Car(int no, CarDisplayI cd, Gate g) {
-
+    	
         this.no = no;
         this.cd = cd;
         mygate = g;
@@ -125,17 +124,24 @@ class Car extends Thread {
                     mygate.pass(); 
                     speed = chooseSpeed();
                 }
-                	
                 newpos = nextPos(curpos);
                 
-                //  Move to new position 
+                //if(newpos.col == 0 && // call newpos er start af alley ) {
+                //	alley.enter();
+                //}
+                // Få en bil til at køre igennem alley
+                //  Move to new position
+                CarControl.sems[newpos.row][newpos.col].P();
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
                 sleep(speed());
                 cd.clear(curpos,newpos);
                 cd.mark(newpos,col,no);
-
+                
+                // Own code here
+                Pos tempPos = curpos;
                 curpos = newpos;
+                CarControl.sems[tempPos.row][tempPos.col].V();
             }
 
         } catch (Exception e) {
@@ -150,19 +156,29 @@ class Car extends Thread {
 public class CarControl implements CarControlI{
 
     CarDisplayI cd;           // Reference to GUI
-    Car[]  car;               // Cars
+    Car[]  cars;               // Cars
     Gate[] gate;              // Gates
+    static Semaphore[][] sems;
+    static Semaphore alleySem;
 
     public CarControl(CarDisplayI cd) {
         this.cd = cd;
-        car  = new  Car[9];
+        cars  = new  Car[9];
         gate = new Gate[9];
+        sems = new Semaphore[11][12];
+        alleySem = new Semaphore(1);
 
         for (int no = 0; no < 9; no++) {
             gate[no] = new Gate();
-            car[no] = new Car(no,cd,gate[no]);
-            car[no].start();
+            cars[no] = new Car(no,cd,gate[no]);
+            cars[no].start();
         } 
+        for(int i = 0; i < sems.length; i++) {
+        	for(int j = 0; j < sems[i].length; j++) {
+        		sems[i][j] = new Semaphore(1);
+        	}
+        }
+        
     }
 
    public void startCar(int no) {
@@ -205,11 +221,11 @@ public class CarControl implements CarControlI{
     /* Speed settings for testing purposes */
 
     public void setSpeed(int no, int speed) { 
-        car[no].setSpeed(speed);
+        cars[no].setSpeed(speed);
     }
 
     public void setVariation(int no, int var) { 
-        car[no].setVariation(var);
+        cars[no].setVariation(var);
     }
 
 }
