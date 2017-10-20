@@ -131,6 +131,14 @@ class Car extends Thread {
                 //}
                 // Få en bil til at køre igennem alley
                 //  Move to new position
+                
+                if(		(newpos.row==1 && newpos.col==2)&&no/5<1 || 
+                		(newpos.row==2 && newpos.col==0)&&(curpos.row==2&&curpos.col==1) ||
+                		(newpos.row==9 && newpos.col==0)&&no/5==1
+                		)
+                	CarControl.alley.enter(no);
+                
+                
                 CarControl.sems[newpos.row][newpos.col].P();
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
@@ -142,6 +150,9 @@ class Car extends Thread {
                 Pos tempPos = curpos;
                 curpos = newpos;
                 CarControl.sems[tempPos.row][tempPos.col].V();
+                if((tempPos.row==9 && tempPos.col==0)&&no/5<1||
+                		(tempPos.row==1&&tempPos.col==2)&&no/5==1) 
+                	CarControl.alley.leave(no);
             }
 
         } catch (Exception e) {
@@ -150,6 +161,8 @@ class Car extends Thread {
             e.printStackTrace();
         }
     }
+   
+   
 
 }
 
@@ -159,15 +172,15 @@ public class CarControl implements CarControlI{
     Car[]  cars;               // Cars
     Gate[] gate;              // Gates
     static Semaphore[][] sems;
-    static Semaphore alleySem;
+    static Alley alley; 
 
     public CarControl(CarDisplayI cd) {
         this.cd = cd;
         cars  = new  Car[9];
         gate = new Gate[9];
         sems = new Semaphore[11][12];
-        alleySem = new Semaphore(1);
-
+        alley = new Alley();
+        
         for (int no = 0; no < 9; no++) {
             gate[no] = new Gate();
             cars[no] = new Car(no,cd,gate[no]);
