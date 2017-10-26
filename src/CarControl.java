@@ -150,7 +150,7 @@ class Car extends Thread {
                 Pos tempPos = curpos;
                 curpos = newpos;
                 CarControl.sems[tempPos.row][tempPos.col].V();
-                if((tempPos.row==9 && tempPos.col==0)&&no/5<1||
+                if(		(tempPos.row==9 && tempPos.col==0)&&no/5<1||
                 		(tempPos.row==1&&tempPos.col==2)&&no/5==1) 
                 	CarControl.alley.leave(no);
             }
