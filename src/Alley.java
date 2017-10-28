@@ -6,80 +6,63 @@ public class Alley {
 	Semaphore alleySemTop;
 	Semaphore alleySemBot;
 	Semaphore countSem;
-	int count;
-	
-	
+	int countUp;
+	int countDown;
+
 	public Alley() {
 		alleySemTop = new Semaphore(1);
 		alleySemBot = new Semaphore(1);
 		countSem = new Semaphore(1);
-		count = 0;
+		countUp = 0;
+		countDown = 0;
 		
 	}
 
-	
-	
-	public void enter(int no) throws InterruptedException {
-		
+	public void enter(int no) throws InterruptedException {		
 		if(no/5<1) {
 			alleySemTop.P();
 			countSem.P();
-			if(count>0) {
-				
-				count++;
-				countSem.V();
-				alleySemTop.V();
+			if(countUp>0) {
+				countUp++;
 			} else {
 				alleySemBot.P();
-				
-				count++;
-				countSem.V();
-				alleySemTop.V();
+				countUp++;
 			}
-		
-			
-			
+			countSem.V();
+			alleySemTop.V();
 		} else {
 			alleySemBot.P();
 			countSem.P();
-			if(count>0) {
-				
-				count++;
-				countSem.V();
-				alleySemBot.V();
+			if(countDown>0) {
+				countDown++;
 			} else {
 				alleySemTop.P();
-				
-				count++;
-				countSem.V();
-				alleySemBot.V();
+				countDown++;
 			}
-			
+			countSem.V();
+			alleySemBot.V();
 		}		
 	}
 
 	public void leave(int no) throws InterruptedException {
 		countSem.P();
-		if(count > 1) {
-			
-			count--;
-			countSem.V();
-		} else {
-			if(no/5<1) {
-				alleySemBot.V();
-				
-				count--;
-				countSem.V();
-			} else {
-				alleySemTop.V();
-				
-				count--;
-				countSem.V();
+		if(no/5<1) {
+			if(countUp > 1) {
+				countUp--;
 			}
-			
-			
+			else {
+				alleySemBot.V();
+				countUp--;
+			}
+		} else {
+			if(countDown > 1) {
+				countDown--;
+			}
+			else {
+				alleySemTop.V();
+				countDown--;
+			}
 		}
+		countSem.V();
 	}
-	
-	
 }
