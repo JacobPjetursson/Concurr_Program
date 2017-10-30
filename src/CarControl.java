@@ -13,14 +13,21 @@ class Gate {
     boolean isopen = false;
 
     public void pass() throws InterruptedException {
-        g.P(); 
+        //CarControl.activeCarCounter--;
+        //System.out.println("carCounter BEFORE: " + CarControl.activeCarCounter);
+    	g.P(); 
+    	//CarControl.activeCarCounter++;
+    	//System.out.println("carCounter AFTER: " + CarControl.activeCarCounter);
         g.V();
+        
     }
 
     public void open() {
         try { e.P(); } catch (InterruptedException e) {}
         if (!isopen) { g.V();  isopen = true; }
         e.V();
+        
+        
     }
 
     public void close() {
@@ -138,6 +145,9 @@ class Car extends Thread {
                 		)
                 	CarControl.alley.enter(no);
                 
+                if(		(curpos.row == 6 && no/5 <1) && CarControl.barrier.isBarrierOn && newpos.col != 0 && curpos.col != 2 ||
+                		(curpos.row == 5 && no/5 ==1) && CarControl.barrier.isBarrierOn && newpos.col != 0 && curpos.col != 2
+                		) CarControl.barrier.sync();
                 
                 CarControl.sems[newpos.row][newpos.col].P();
                 cd.clear(curpos);
@@ -173,6 +183,8 @@ public class CarControl implements CarControlI{
     Gate[] gate;              // Gates
     static Semaphore[][] sems;
     static Alley alley; 
+    static Barrier barrier;
+    //static int activeCarCounter;
 
     public CarControl(CarDisplayI cd) {
         this.cd = cd;
@@ -180,6 +192,8 @@ public class CarControl implements CarControlI{
         gate = new Gate[9];
         sems = new Semaphore[11][12];
         alley = new Alley();
+        barrier = new Barrier();
+        //activeCarCounter = 9;
         
         for (int no = 0; no < 9; no++) {
             gate[no] = new Gate();
@@ -192,6 +206,7 @@ public class CarControl implements CarControlI{
         	}
         }
         
+        
     }
 
    public void startCar(int no) {
@@ -203,11 +218,13 @@ public class CarControl implements CarControlI{
     }
 
     public void barrierOn() { 
-        cd.println("Barrier On not implemented in this version");
+    	barrier.on();
+        //cd.println("Barrier On not implemented in this version");
     }
 
     public void barrierOff() { 
-        cd.println("Barrier Off not implemented in this version");
+        barrier.off();
+    	//cd.println("Barrier Off not implemented in this version");
     }
 
     public void barrierShutDown() { 
