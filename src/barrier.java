@@ -22,10 +22,12 @@ public class Barrier {
 				i--;
 			}
 		}
-		counterSem.V();
 		System.out.println(barrierCounter);
+		counterSem.V();
 		barrierSem.P();
+		counterSem.P();
 		barrierCounter--;
+		counterSem.V();
 	}
 	
 	
