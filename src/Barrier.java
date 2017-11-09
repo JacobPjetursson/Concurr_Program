@@ -11,7 +11,6 @@ public class Barrier {
 		isBarrierOn = false;
 		barrierCounter = 0;
 	}
-	
 	public void sync() throws InterruptedException {
 		counterSem.P();
 		barrierCounter++;
