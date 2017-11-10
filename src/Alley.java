@@ -14,13 +14,11 @@ public class Alley {
 
 	public synchronized void enter(int no) throws InterruptedException {
 		if(no/5<1) {
-			while(countDown != 0) {
-				System.out.println("wut");
+			if(countDown != 0) {
 				wait();
 			}
 		} else {
-			while(countUp != 0) {
-				System.out.println("wut");
+			if(countUp != 0) {
 				wait();
 			}
 		}

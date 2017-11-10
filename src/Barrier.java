@@ -15,17 +15,19 @@ public class Barrier {
 		counterSem.P();
 		barrierCounter++;
 		if(barrierCounter == 9) {
-			int i = barrierCounter;
-			while(i>0){
-				barrierSem.V();
-				i--;
-			}
+			barrierSem.V();
 		}
 		System.out.println(barrierCounter);
 		counterSem.V();
 		barrierSem.P();
+		
 		counterSem.P();
 		barrierCounter--;
+		
+		barrierSem.V();
+		if(barrierCounter == 0) {
+			barrierSem.P();
+		}
 		counterSem.V();
 	}
 	
