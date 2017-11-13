@@ -1,53 +1,44 @@
 
 public class Barrier {
-
-	Semaphore barrierSem;
-	Semaphore counterSem;
 	boolean isBarrierOn;
+	boolean shutdown;
 	int barrierCounter;
 	public Barrier () {
-		barrierSem = new Semaphore(0);
-		counterSem = new Semaphore(1);
 		isBarrierOn = false;
 		barrierCounter = 0;
 	}
-	public void sync() throws InterruptedException {
-		counterSem.P();
+	public synchronized void sync() throws InterruptedException {
 		barrierCounter++;
-		if(barrierCounter == 9) {
-			barrierSem.V();
-		}
 		System.out.println(barrierCounter);
-		counterSem.V();
-		barrierSem.P();
-		
-		counterSem.P();
-		barrierCounter--;
-		
-		barrierSem.V();
-		if(barrierCounter == 0) {
-			barrierSem.P();
+		if(barrierCounter == 9) {
+			notifyAll();
+			if(shutdown) {
+				isBarrierOn = false;
+			}
+		} else {
+			wait();
 		}
-		counterSem.V();
+		barrierCounter--;
 	}
 	
 	
 	
-	public void on() {
+	public synchronized void on() {
 		if(!isBarrierOn) {
 			isBarrierOn = true;
-			barrierSem = new Semaphore(0);
 		}
+		shutdown = false;
 	}
 	
-	public void off() {
+	public synchronized void off() {
 		if(isBarrierOn) {
 			isBarrierOn = false;
-			int i = barrierCounter;
-			while(i>0){
-				barrierSem.V();
-				i--;
-			}	
+			notifyAll();
+		}
+	}
+	public void shutdown() {
+		if(!shutdown) {
+			shutdown = true;
 		}
 	}
 	

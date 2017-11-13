@@ -13,11 +13,7 @@ class Gate {
     boolean isopen = false;
 
     public void pass() throws InterruptedException {
-        //CarControl.activeCarCounter--;
-        //System.out.println("carCounter BEFORE: " + CarControl.activeCarCounter);
     	g.P(); 
-    	//CarControl.activeCarCounter++;
-    	//System.out.println("carCounter AFTER: " + CarControl.activeCarCounter);
         g.V();
         
     }
@@ -45,9 +41,11 @@ class Car extends Thread {
 	
     int basespeed = 100;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
+    
 
     CarDisplayI cd;                  // GUI part
-
+    
+    boolean removed;
     int no;                          // Car number
     Pos startpos;                    // Startpositon (provided by GUI)
     Pos barpos;                      // Barrierpositon (provided by GUI)
@@ -66,6 +64,7 @@ class Car extends Thread {
         mygate = g;
         startpos = cd.getStartPos(no);
         barpos = cd.getBarrierPos(no);  // For later use
+        removed = false;
 
         col = chooseColor();
 
@@ -116,53 +115,62 @@ class Car extends Thread {
     boolean atGate(Pos pos) {
         return pos.equals(startpos);
     }
-
+    boolean atAlleyEntrance() {
+    	return (curpos.row==1 && curpos.col==3 && no/5 == 0) || 
+        	   (curpos.row==2 && curpos.col==1 && no/5 == 0) ||
+        	   (curpos.row==10 && curpos.col==0 && no/5 == 1);
+    }
+    boolean atAlleyExit() {
+    	return (curpos.row==9 && curpos.col==0 && no/5 == 0) ||
+        (curpos.row==1 && curpos.col==2 && no/5==1); 
+    }
+    boolean atBarrier() {
+    	return (curpos.row == barpos.row && curpos.col == barpos.col &&
+        		CarControl.barrier.isBarrierOn);
+    }
+    boolean inAlley() {
+    	return (curpos.col == 0 && curpos.row != 10) ||
+    			(curpos.col == 1 && curpos.row == 1) ||
+				(curpos.col == 2 && curpos.row == 1);
+    }
    public void run() {
         try {
-
             speed = chooseSpeed();
             curpos = startpos;
             cd.mark(curpos,col,no);
 
-            while (true) { 
+            while (true) {
+          		// REMOVAL OF CAR
+				if(removed) {
+					if(inAlley()) {
+						CarControl.alley.leave(no);
+					}
+					CarControl.sems[newpos.row][newpos.col].V();
+					cd.clear(newpos);
+					break;
+				}
                 sleep(speed());
-  
                 if (atGate(curpos)) { 
                     mygate.pass(); 
                     speed = chooseSpeed();
                 }
                 newpos = nextPos(curpos);
                 
-                //if(newpos.col == 0 && // call newpos er start af alley ) {
-                //	alley.enter();
-                //}
-                // Få en bil til at køre igennem alley
-                //  Move to new position
-                
-                if(		(newpos.row==1 && newpos.col==2)&&no/5<1 || 
-                		(newpos.row==2 && newpos.col==0)&&(curpos.row==2&&curpos.col==1) ||
-                		(newpos.row==9 && newpos.col==0)&&no/5==1
-                		)
-                	CarControl.alley.enter(no);
-                
-                if(		(curpos.row == 6 && no/5 <1) && CarControl.barrier.isBarrierOn && newpos.col != 0 && curpos.col != 2 ||
-                		(curpos.row == 5 && no/5 ==1) && CarControl.barrier.isBarrierOn && newpos.col != 0 && curpos.col != 2
-                		) CarControl.barrier.sync();
+                if(atAlleyEntrance()) CarControl.alley.enter(no);
+                if(atBarrier()) CarControl.barrier.sync();
+                if(atAlleyExit()) CarControl.alley.leave(no);
                 
                 CarControl.sems[newpos.row][newpos.col].P();
+                
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
                 sleep(speed());
                 cd.clear(curpos,newpos);
                 cd.mark(newpos,col,no);
                 
-                // Own code here
-                Pos tempPos = curpos;
+                CarControl.sems[curpos.row][curpos.col].V();
                 curpos = newpos;
-                CarControl.sems[tempPos.row][tempPos.col].V();
-                if(		(tempPos.row==9 && tempPos.col==0)&&no/5<1||
-                		(tempPos.row==1&&tempPos.col==2)&&no/5==1) 
-                	CarControl.alley.leave(no);
+                
             }
 
         } catch (Exception e) {
@@ -184,7 +192,6 @@ public class CarControl implements CarControlI{
     static Semaphore[][] sems;
     static Alley alley; 
     static Barrier barrier;
-    //static int activeCarCounter;
 
     public CarControl(CarDisplayI cd) {
         this.cd = cd;
@@ -193,7 +200,6 @@ public class CarControl implements CarControlI{
         sems = new Semaphore[11][12];
         alley = new Alley();
         barrier = new Barrier();
-        //activeCarCounter = 9;
         
         for (int no = 0; no < 9; no++) {
             gate[no] = new Gate();
@@ -204,11 +210,8 @@ public class CarControl implements CarControlI{
         	for(int j = 0; j < sems[i].length; j++) {
         		sems[i][j] = new Semaphore(1);
         	}
-        }
-        
-        
+        } 
     }
-
    public void startCar(int no) {
         gate[no].open();
     }
@@ -219,33 +222,32 @@ public class CarControl implements CarControlI{
 
     public void barrierOn() { 
     	barrier.on();
-        //cd.println("Barrier On not implemented in this version");
     }
 
     public void barrierOff() { 
         barrier.off();
-    	//cd.println("Barrier Off not implemented in this version");
     }
 
     public void barrierShutDown() { 
-        cd.println("Barrier shut down not implemented in this version");
-        // This sleep is for illustrating how blocking affects the GUI
-        // Remove when shutdown is implemented.
-        try { Thread.sleep(3000); } catch (InterruptedException e) { }
-        // Recommendation: 
-        //   If not implemented call barrier.off() instead to make graphics consistent
+       if(barrier.isBarrierOn) {
+    	   barrier.shutdown();
+       }
     }
 
     public void setLimit(int k) { 
         cd.println("Setting of bridge limit not implemented in this version");
     }
 
-    public void removeCar(int no) { 
-        cd.println("Remove Car not implemented in this version");
+    public synchronized void removeCar(int no) { 
+    	cars[no].removed = true;
+    	notify();
     }
 
     public void restoreCar(int no) { 
-        cd.println("Restore Car not implemented in this version");
+    	if(cars[no].removed) {
+    		cars[no] = new Car(no,cd,gate[no]);
+            cars[no].start();
+    	}
     }
 
     /* Speed settings for testing purposes */
@@ -259,9 +261,3 @@ public class CarControl implements CarControlI{
     }
 
 }
-
-
-
-
-
-

@@ -1,8 +1,5 @@
 
 public class Alley {
-	// Define alley tiles in array
-	Semaphore alleySemTop;
-	Semaphore alleySemBot;
 	int countUp;
 	int countDown;
 
