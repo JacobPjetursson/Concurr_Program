@@ -248,7 +248,7 @@ public class CarControl implements CarControlI{
     }
 
     public void restoreCar(int no) { 
-    	if(!cars[no].removed) {
+    	if(cars[no].removed) {
     		cars[no] = new Car(no,cd,gate[no]);
     		cars[no].start();
     	} else {
