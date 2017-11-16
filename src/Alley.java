@@ -10,7 +10,7 @@ public class Alley {
 	}
 
 	public synchronized void enter(int no) throws InterruptedException {
-		if(no/5<1) {
+		if(no / 5 == 0) {
 			while(countDown != 0) {
 				wait();
 			}
@@ -20,7 +20,7 @@ public class Alley {
 			}
 		}
 		
-		if(no/5 == 0) {
+		if(no / 5 == 0) {
 			countUp++;
 			
 		} else {
@@ -30,17 +30,12 @@ public class Alley {
 	}
 
 	public synchronized void leave(int no) throws InterruptedException {
-		if(no/5 < 1) {
+		if(no / 5 == 0) {
 			countUp--;
 		} else {
 			countDown--;
 		}
-		if(countUp == 0 && countDown == 0) {
-			notifyAll();
-		}	
-	}
-	public synchronized void wakeupThreads() {
-		notifyAll();
+		notifyAll();	
 	}
 	public synchronized void removeCar(int no) {
 		if(no / 5 == 0) {
