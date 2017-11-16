@@ -39,7 +39,7 @@ class Gate {
 
 class Car extends Thread {
 	
-    int basespeed = 100;             // Rather: degree of slowness
+    int basespeed = 70;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
     
 
@@ -228,9 +228,9 @@ public class CarControl implements CarControlI{
         cd.println("Setting of bridge limit not implemented in this version");
     }
 
-    public synchronized void removeCar(int no) { 
+    public void removeCar(int no) { 
     	if(cars[no].removed) {
-    		cd.println("The car is already removed, dummy!");
+    		cd.println("The car is already removed!");
     		return;
     	}
     	cars[no].interrupt();
@@ -248,15 +248,18 @@ public class CarControl implements CarControlI{
     	if(cars[no].inAlley()) {
     		alley.removeCar(no);
     	}
+    	barrier.removeCar(cars[no].atBarrier());
+ 
     	cars[no].removed = true;
     }
 
     public void restoreCar(int no) { 
     	if(cars[no].removed) {
     		cars[no] = new Car(no,cd,gate[no]);
+    		barrier.addCar();
     		cars[no].start();
     	} else {
-    		cd.println("You can't restore an active car dummy!");
+    		cd.println("You can't restore an active car!");
     	}
     }
 

@@ -2,23 +2,33 @@
 public class Barrier {
 	boolean isBarrierOn;
 	boolean shutdown;
+	boolean release;
 	int barrierCounter;
+	int amountOfCars;
 	public Barrier () {
 		isBarrierOn = false;
+		release = false;
 		barrierCounter = 0;
+		amountOfCars = 9;
 	}
 	public synchronized void sync() throws InterruptedException {
 		barrierCounter++;
 		System.out.println(barrierCounter);
-		if(barrierCounter == 9) {
+		
+		while(barrierCounter != amountOfCars && !release) {
+			wait();
+		}
+		if(barrierCounter == amountOfCars) {
+			release = true;
 			notifyAll();
 			if(shutdown) {
 				isBarrierOn = false;
 			}
-		} else {
-			wait();
-		}
+		} 
 		barrierCounter--;
+		if(barrierCounter == 0) {
+			release = false;
+		}
 	}
 	
 	
@@ -26,6 +36,7 @@ public class Barrier {
 	public synchronized void on() {
 		if(!isBarrierOn) {
 			isBarrierOn = true;
+			release = false;
 		}
 		shutdown = false;
 	}
@@ -33,13 +44,24 @@ public class Barrier {
 	public synchronized void off() {
 		if(isBarrierOn) {
 			isBarrierOn = false;
+			release = true;
 			notifyAll();
 		}
 	}
-	public void shutdown() {
+	public synchronized void shutdown() {
 		if(!shutdown) {
 			shutdown = true;
 		}
 	}
-	
+	public synchronized void removeCar(boolean atBarrier) {
+		if(atBarrier && isBarrierOn) {
+			barrierCounter--;			
+		}
+		amountOfCars--;
+		notifyAll();
+	}
+	public synchronized void addCar() {
+		amountOfCars++;
+		notifyAll();
+	}
 }
