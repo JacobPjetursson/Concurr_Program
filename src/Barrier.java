@@ -6,12 +6,14 @@ public class Barrier {
 	Semaphore gateSem;
 	boolean isBarrierOn;
 	int barrierCounter;
+	int prevCounter;
 	public Barrier () {
 		barrierSem = new Semaphore(0);
 		counterSem = new Semaphore(1);
 		gateSem = new Semaphore(9);
 		isBarrierOn = false;
 		barrierCounter = 0;
+		prevCounter = 0;
 	}
 	public void sync() throws InterruptedException {
 		gateSem.P();
@@ -20,7 +22,14 @@ public class Barrier {
 		if(barrierCounter == 9) {
 			barrierSem.V();
 		}
+		
 		System.out.println(barrierCounter);
+		if(barrierCounter == 1 && prevCounter != 9) {
+			System.out.println("ERRORS");
+		} else if(barrierCounter != 1 && barrierCounter != prevCounter +1) {
+			System.out.println("ERRORS");
+		}
+		prevCounter = barrierCounter;
 		counterSem.V();
 		barrierSem.P();
 		
@@ -46,13 +55,13 @@ public class Barrier {
 	
 	public void off() {
 		if(isBarrierOn) {
-			isBarrierOn = false;
 			int i = barrierCounter;
 			while(i>0){
 				barrierSem.V();
 				i--;
 			}	
 		}
+		isBarrierOn = false;
 	}
 	
 }

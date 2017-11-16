@@ -19,10 +19,10 @@ public class Alley {
 	}
 
 	public void enter(int no) throws InterruptedException {		
-		if(no/5<1) {
+		if(no/5 == 0) {
 			alleySemTop.P();
 			countSem.P();
-			if(countUp>0) {
+			if(countUp > 0) {
 				countUp++;
 			} else {
 				alleySemBot.P();
@@ -46,7 +46,7 @@ public class Alley {
 
 	public void leave(int no) throws InterruptedException {
 		countSem.P();
-		if(no/5<1) {
+		if(no/5 == 0) {
 			if(countUp > 1) {
 				countUp--;
 			}
