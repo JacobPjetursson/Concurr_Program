@@ -48,6 +48,7 @@ public class Alley {
 		} else {
 			countDown--;
 		}
+		notifyAll();
 	}
 	
 }
