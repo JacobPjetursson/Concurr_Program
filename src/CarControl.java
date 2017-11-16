@@ -229,6 +229,10 @@ public class CarControl implements CarControlI{
     }
 
     public synchronized void removeCar(int no) { 
+    	if(cars[no].removed) {
+    		cd.println("The car is already removed, dummy!");
+    		return;
+    	}
     	cars[no].interrupt();
     	Pos newpos = cars[no].newpos;
     	Pos curpos = cars[no].curpos;
