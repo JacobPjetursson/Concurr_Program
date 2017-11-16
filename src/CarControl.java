@@ -56,6 +56,7 @@ class Car extends Thread {
     int speed;                       // Current car speed
     Pos curpos;                      // Current position 
     Pos newpos;                      // New position to go to
+    boolean inBetween;
 
     public Car(int no, CarDisplayI cd, Gate g) {
     	
@@ -65,6 +66,7 @@ class Car extends Thread {
         startpos = cd.getStartPos(no);
         barpos = cd.getBarrierPos(no);  // For later use
         removed = false;
+        inBetween = false;
 
         col = chooseColor();
 
@@ -140,50 +142,38 @@ class Car extends Thread {
             cd.mark(curpos,col,no);
 
             while (true) {
-          		// REMOVAL OF CAR
-				if(removed) {
-					if(inAlley()) {
-						CarControl.alley.leave(no);
-					}
-					CarControl.sems[newpos.row][newpos.col].V();
-					cd.clear(newpos);
-					break;
-				}
                 sleep(speed());
-                if (atGate(curpos)) { 
+                if (atGate(curpos) && !removed) { 
                     mygate.pass(); 
                     speed = chooseSpeed();
                 }
                 newpos = nextPos(curpos);
-                
+                // Own code
                 if(atAlleyEntrance()) CarControl.alley.enter(no);
                 if(atBarrier()) CarControl.barrier.sync();
                 if(atAlleyExit()) CarControl.alley.leave(no);
                 
                 CarControl.sems[newpos.row][newpos.col].P();
-                
+                inBetween = true;
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
                 sleep(speed());
                 cd.clear(curpos,newpos);
                 cd.mark(newpos,col,no);
-                
                 CarControl.sems[curpos.row][curpos.col].V();
                 curpos = newpos;
-                
+                inBetween = false;
             }
 
         } catch (Exception e) {
+        	/*
             cd.println("Exception in Car no. " + no);
             System.err.println("Exception in Car no. " + no + ":" + e);
             e.printStackTrace();
+            */
         }
     }
-   
-   
-
 }
-
 public class CarControl implements CarControlI{
 
     CarDisplayI cd;           // Reference to GUI
@@ -239,14 +229,30 @@ public class CarControl implements CarControlI{
     }
 
     public synchronized void removeCar(int no) { 
+    	cars[no].interrupt();
+    	Pos newpos = cars[no].newpos;
+    	Pos curpos = cars[no].curpos;
+    	
+    	if(cars[no].inBetween) {
+    		sems[curpos.row][curpos.col].V();
+    		sems[newpos.row][newpos.col].V();
+    		cd.clear(curpos, newpos);
+    	} else {
+    		sems[curpos.row][curpos.col].V();
+    		cd.clear(curpos);
+    	}
+    	if(cars[no].inAlley()) {
+    		alley.removeCar(no);
+    	}
     	cars[no].removed = true;
-    	notify();
     }
 
     public void restoreCar(int no) { 
-    	if(cars[no].removed) {
+    	if(!cars[no].removed) {
     		cars[no] = new Car(no,cd,gate[no]);
-            cars[no].start();
+    		cars[no].start();
+    	} else {
+    		cd.println("You can't restore an active car dummy!");
     	}
     }
 
