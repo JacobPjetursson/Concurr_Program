@@ -31,8 +31,6 @@ public class Barrier {
 		}
 	}
 	
-	
-	
 	public synchronized void on() {
 		if(!isBarrierOn) {
 			isBarrierOn = true;

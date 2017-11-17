@@ -39,7 +39,7 @@ class Gate {
 
 class Car extends Thread {
 	
-    int basespeed = 20;             // Rather: degree of slowness
+    int basespeed = 5;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
     
 
@@ -80,6 +80,7 @@ class Car extends Thread {
 
     public synchronized void setSpeed(int speed) { 
         if (no != 0 && speed >= 0) {
+        	this.speed = speed;
             basespeed = speed;
         }
         else
