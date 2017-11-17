@@ -39,7 +39,7 @@ class Gate {
 
 class Car extends Thread {
 	
-    int basespeed = 70;             // Rather: degree of slowness
+    int basespeed = 20;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
     
 
