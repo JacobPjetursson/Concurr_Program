@@ -45,7 +45,6 @@ class Car extends Thread {
 
     CarDisplayI cd;                  // GUI part
     
-    boolean removed;
     int no;                          // Car number
     Pos startpos;                    // Startpositon (provided by GUI)
     Pos barpos;                      // Barrierpositon (provided by GUI)
@@ -56,6 +55,9 @@ class Car extends Thread {
     int speed;                       // Current car speed
     Pos curpos;                      // Current position 
     Pos newpos;                      // New position to go to
+    
+    // Own fields
+    boolean removed;
     boolean inBetween;
     boolean inAlley;
     boolean atBarrier;
@@ -67,6 +69,7 @@ class Car extends Thread {
         mygate = g;
         startpos = cd.getStartPos(no);
         barpos = cd.getBarrierPos(no);  // For later use
+        
         removed = false;
         inBetween = false;
         inAlley = false;
