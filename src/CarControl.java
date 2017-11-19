@@ -39,7 +39,7 @@ class Gate {
 
 class Car extends Thread {
 	
-    int basespeed = 5;             // Rather: degree of slowness
+    int basespeed = 20;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
     
 
@@ -57,6 +57,8 @@ class Car extends Thread {
     Pos curpos;                      // Current position 
     Pos newpos;                      // New position to go to
     boolean inBetween;
+    boolean inAlley;
+    boolean atBarrier;
 
     public Car(int no, CarDisplayI cd, Gate g) {
     	
@@ -67,6 +69,8 @@ class Car extends Thread {
         barpos = cd.getBarrierPos(no);  // For later use
         removed = false;
         inBetween = false;
+        inAlley = false;
+        atBarrier = false;
 
         col = chooseColor();
 
@@ -124,17 +128,12 @@ class Car extends Thread {
         	   (curpos.row==10 && curpos.col==0 && no/5 == 1);
     }
     boolean atAlleyExit() {
-    	return (curpos.row==9 && curpos.col==0 && no/5 == 0) ||
-        (curpos.row==1 && curpos.col==2 && no/5==1); 
+    	return (curpos.row==9 && curpos.col==1 && no/5 == 0) ||
+        (curpos.row==0 && curpos.col==2 && no/5==1); 
     }
-    boolean atBarrier() {
+    boolean atBarrierEntrance() {
     	return (curpos.row == barpos.row && curpos.col == barpos.col &&
         		CarControl.barrier.isBarrierOn);
-    }
-    boolean inAlley() {
-    	return (curpos.col == 0 && curpos.row != 10) ||
-    			(curpos.col == 1 && curpos.row == 1) ||
-				(curpos.col == 2 && curpos.row == 1);
     }
    public void run() {
         try {
@@ -144,16 +143,27 @@ class Car extends Thread {
 
             while (true) {
                 sleep(speed());
-                if (atGate(curpos) && !removed) { 
+                if (atGate(curpos)) { 
                     mygate.pass(); 
                     speed = chooseSpeed();
                 }
                 newpos = nextPos(curpos);
                 // Own code
-                if(atAlleyEntrance()) CarControl.alley.enter(no);
-                if(atBarrier()) CarControl.barrier.sync();
-                if(atAlleyExit()) CarControl.alley.leave(no);
+                if(atAlleyEntrance()) {
+                	CarControl.alley.enter(no);
+                	inAlley = true;
+                }
+                if(atAlleyExit()) {
+                	CarControl.alley.leave(no);
+                	inAlley = false;
+                }
                 
+                if(atBarrierEntrance()) {
+                	atBarrier = true;
+                	CarControl.barrier.sync();
+                }
+                atBarrier = false;
+
                 CarControl.sems[newpos.row][newpos.col].P();
                 inBetween = true;
                 cd.clear(curpos);
@@ -162,7 +172,9 @@ class Car extends Thread {
                 cd.clear(curpos,newpos);
                 cd.mark(newpos,col,no);
                 CarControl.sems[curpos.row][curpos.col].V();
+                
                 curpos = newpos;
+                
                 inBetween = false;
             }
 
@@ -184,6 +196,7 @@ public class CarControl implements CarControlI{
     static Alley alley; 
     static Barrier barrier;
 
+
     public CarControl(CarDisplayI cd) {
         this.cd = cd;
         cars  = new  Car[9];
@@ -191,6 +204,8 @@ public class CarControl implements CarControlI{
         sems = new Semaphore[11][12];
         alley = new Alley();
         barrier = new Barrier();
+
+        
         
         for (int no = 0; no < 9; no++) {
             gate[no] = new Gate();
@@ -246,11 +261,10 @@ public class CarControl implements CarControlI{
     		sems[curpos.row][curpos.col].V();
     		cd.clear(curpos);
     	}
-    	if(cars[no].inAlley()) {
+    	if(cars[no].inAlley) {
     		alley.removeCar(no);
     	}
-    	barrier.removeCar(cars[no].atBarrier());
- 
+    	barrier.removeCar(cars[no].atBarrier);
     	cars[no].removed = true;
     }
 

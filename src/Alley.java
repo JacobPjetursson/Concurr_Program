@@ -19,7 +19,6 @@ public class Alley {
 				wait();
 			}
 		}
-		
 		if(no / 5 == 0) {
 			countUp++;
 			

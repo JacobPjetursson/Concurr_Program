@@ -10,11 +10,12 @@ public class Barrier {
 		release = false;
 		barrierCounter = 0;
 		amountOfCars = 9;
+
 	}
 	public synchronized void sync() throws InterruptedException {
 		barrierCounter++;
-		System.out.println(barrierCounter);
-		
+//		System.out.println(barrierCounter);
+
 		while(barrierCounter != amountOfCars && !release) {
 			wait();
 		}
@@ -25,6 +26,7 @@ public class Barrier {
 				isBarrierOn = false;
 			}
 		} 
+		
 		barrierCounter--;
 		if(barrierCounter == 0) {
 			release = false;
@@ -53,7 +55,7 @@ public class Barrier {
 	}
 	public synchronized void removeCar(boolean atBarrier) {
 		if(atBarrier && isBarrierOn) {
-			barrierCounter--;			
+			barrierCounter--;
 		}
 		amountOfCars--;
 		notifyAll();
