@@ -8,12 +8,15 @@ public class Barrier {
 	int barrierCounter;
 	int prevCounter;
 	public Barrier () {
+		/* We use 3 semaphores in total, 1 for managing critical sections around the barrier counter (counterSem),
+		 * one for forbidding cars from entering the barrier before all cars have left it (gateSem),
+		 * and one for stopping the cars at the barrier (barrierSem)
+		 */
 		barrierSem = new Semaphore(0);
 		counterSem = new Semaphore(1);
 		gateSem = new Semaphore(9);
 		isBarrierOn = false;
 		barrierCounter = 0;
-		prevCounter = 0;
 	}
 	public void sync() throws InterruptedException {
 		gateSem.P();
@@ -22,14 +25,6 @@ public class Barrier {
 		if(barrierCounter == 9) {
 			barrierSem.V();
 		}
-		
-		System.out.println(barrierCounter);
-		if(barrierCounter == 1 && prevCounter != 9) {
-			System.out.println("ERRORS");
-		} else if(barrierCounter != 1 && barrierCounter != prevCounter +1) {
-			System.out.println("ERRORS");
-		}
-		prevCounter = barrierCounter;
 		counterSem.V();
 		barrierSem.P();
 		
@@ -37,6 +32,7 @@ public class Barrier {
 		barrierCounter--;
 		
 		barrierSem.V();
+		// All cars are allowed to enter the barrier again
 		if(barrierCounter == 0) {
 			barrierSem.P();
 			for(int i = 0; i<9;i++) gateSem.V();

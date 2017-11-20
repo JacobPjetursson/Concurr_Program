@@ -39,7 +39,7 @@ class Gate {
 
 class Car extends Thread {
 	
-    int basespeed = 20;             // Rather: degree of slowness
+    int basespeed = 75;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
     
     CarDisplayI cd;                  // GUI part
@@ -140,7 +140,7 @@ class Car extends Thread {
                     speed = chooseSpeed();
                 }
                 newpos = nextPos(curpos);
-                // Own code
+                // Own code here
                 if(atAlleyEntrance()) {
                 	CarControl.alley.enter(no);
                 }
@@ -151,7 +151,7 @@ class Car extends Thread {
                 if(atBarrierEntrance()) {
                 	CarControl.barrier.sync();
                 }
-
+                // Before doing the movement below, we set the semaphore corresponding to the new position of the car
                 CarControl.sems[newpos.row][newpos.col].P();
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
@@ -238,7 +238,7 @@ public class CarControl implements CarControlI{
     /* Speed settings for testing purposes */
 
     public void setSpeed(int no, int speed) { 
-        cars[no].setSpeed(speed);
+        cars[no].setSpeed(speed);        
     }
 
     public void setVariation(int no, int var) { 

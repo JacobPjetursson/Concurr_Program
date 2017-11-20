@@ -30,7 +30,7 @@ public class CarTest extends Thread {
                 // Change speed to double of default values
                 cars.println("Doubling speeds");
                 for (int i = 1; i < 9; i++) {
-                    cars.setSpeed(i,50);
+                    cars.setSpeed(i,10);
                 };
                 break;
 

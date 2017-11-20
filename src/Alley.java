@@ -19,6 +19,7 @@ public class Alley {
 	}
 
 	public void enter(int no) throws InterruptedException {		
+		// For car no 1,2,3,4. We set the top semaphore, so that cars entering at bottom can't enter
 		if(no/5 == 0) {
 			alleySemTop.P();
 			countSem.P();
@@ -30,6 +31,7 @@ public class Alley {
 			}
 			countSem.V();
 			alleySemTop.V();
+		// Same as above, but for car 5,6,7,8
 		} else {
 			alleySemBot.P();
 			countSem.P();
@@ -45,6 +47,7 @@ public class Alley {
 	}
 
 	public void leave(int no) throws InterruptedException {
+		// Here we count down the cars leaving the alley and release the relevant semaphores if the counters reach 0.
 		countSem.P();
 		if(no/5 == 0) {
 			if(countUp > 1) {
