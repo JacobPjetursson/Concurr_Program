@@ -1,9 +1,9 @@
 
 public class Barrier {
 
-	Semaphore barrierSem;
+	Semaphore syncSem;
 	Semaphore counterSem;
-	Semaphore gateSem;
+	Semaphore barrierSem;
 	boolean isBarrierOn;
 	int barrierCounter;
 	int prevCounter;
@@ -12,30 +12,30 @@ public class Barrier {
 		 * one for forbidding cars from entering the barrier before all cars have left it (gateSem),
 		 * and one for stopping the cars at the barrier (barrierSem)
 		 */
-		barrierSem = new Semaphore(0);
+		syncSem = new Semaphore(0);
 		counterSem = new Semaphore(1);
-		gateSem = new Semaphore(9);
+		barrierSem = new Semaphore(9);
 		isBarrierOn = false;
 		barrierCounter = 0;
 	}
 	public void sync() throws InterruptedException {
-		gateSem.P();
+		barrierSem.P();
 		counterSem.P();
 		barrierCounter++;
 		if(barrierCounter == 9) {
-			barrierSem.V();
+			syncSem.V();
 		}
 		counterSem.V();
-		barrierSem.P();
+		syncSem.P();
 		
 		counterSem.P();
 		barrierCounter--;
 		
-		barrierSem.V();
+		syncSem.V();
 		// All cars are allowed to enter the barrier again
 		if(barrierCounter == 0) {
-			barrierSem.P();
-			for(int i = 0; i<9;i++) gateSem.V();
+			syncSem.P();
+			for(int i = 0; i<9;i++) barrierSem.V();
 		}
 		counterSem.V();
 	}
@@ -45,7 +45,7 @@ public class Barrier {
 	public void on() {
 		if(!isBarrierOn) {
 			isBarrierOn = true;
-			barrierSem = new Semaphore(0);
+			syncSem = new Semaphore(0);
 		}
 	}
 	
@@ -53,7 +53,7 @@ public class Barrier {
 		if(isBarrierOn) {
 			int i = barrierCounter;
 			while(i>0){
-				barrierSem.V();
+				syncSem.V();
 				i--;
 			}	
 		}
