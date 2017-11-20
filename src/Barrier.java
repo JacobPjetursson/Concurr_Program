@@ -9,8 +9,8 @@ public class Barrier {
 	int prevCounter;
 	public Barrier () {
 		/* We use 3 semaphores in total, 1 for managing critical sections around the barrier counter (counterSem),
-		 * one for forbidding cars from entering the barrier before all cars have left it (gateSem),
-		 * and one for stopping the cars at the barrier (barrierSem)
+		 * one for forbidding cars from entering the barrier before all cars have left it (barrierSem),
+		 * and one for stopping the cars at the barrier (syncSem)
 		 */
 		syncSem = new Semaphore(0);
 		counterSem = new Semaphore(1);
@@ -32,8 +32,8 @@ public class Barrier {
 		barrierCounter--;
 		
 		syncSem.V();
-		// All cars are allowed to enter the barrier again
-		if(barrierCounter == 0) {
+		
+		if(barrierCounter == 0) { // Re-initiate the semaphores so the barrier can be reused.
 			syncSem.P();
 			for(int i = 0; i<9;i++) barrierSem.V();
 		}
