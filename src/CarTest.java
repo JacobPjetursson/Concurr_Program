@@ -1,3 +1,5 @@
+import java.util.Random;
+
 //Prototype implementation of Car Test class
 //Mandatory assignment
 //Course 02158 Concurrent Programming, DTU, Fall 2017
@@ -24,7 +26,14 @@ public class CarTest extends Thread {
                 sleep(3000);
                 cars.stopAll();
                 break;
-
+            // Set fast speed for all cars
+            case 1:
+            	cars.println("Setting fast speed for all cars");
+            	cars.startAll();
+                for (int i = 1; i < 9; i++) {
+                    cars.setSpeed(i, 15);
+                }
+                break;
             case 19:
                 // Demonstration of speed setting.
                 // Change speed to double of default values
