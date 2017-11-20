@@ -173,7 +173,9 @@ class Car extends Thread {
                 	removeCarSem.V();
                 }
                 CarControl.sems[newpos.row][newpos.col].P();
-                // BUG HER HVIS SLEEP INDSÆTTES
+                /* The program breaks down by inserting a sleep at this line. The reason is explained thoroughly in the report.
+                 * The semaphore below is to handle proper removal of cars.
+                 */
                 removeCarSem.P();
 
                 cd.clear(curpos);
@@ -260,7 +262,7 @@ public class CarControl implements CarControlI{
     		cd.println("The car is already removed!");
     		return;
     	}
-    	
+    	// If the car is not in any critical section, we can safely remove it. We do this by acquiring the car's removeCar semaphore.
     	try {
 			cars[no].removeCarSem.P();
 		} catch (InterruptedException e) {
@@ -269,7 +271,7 @@ public class CarControl implements CarControlI{
     	
     	cars[no].interrupt();
     	Pos curpos = cars[no].curpos;
-    	
+    	// Below this is all cleanup code to make sure the interrupts are handled properly.
 		sems[curpos.row][curpos.col].V();
 		cd.clear(curpos);
     	

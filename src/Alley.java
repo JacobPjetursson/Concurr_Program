@@ -19,7 +19,10 @@ public class Alley {
 				wait();
 			}
 		}
+		// This semaphore is here to manage proper removal of cars by enclosing the counters with the boolean set
+		// in the CarControl class
 		removeCarSem.P();
+		
 		if(no / 5 == 0) {
 			countUp++;
 			
@@ -30,7 +33,10 @@ public class Alley {
 	}
 
 	public synchronized void leave(int no, Semaphore removeCarSem) throws InterruptedException {
+		// This semaphore is here to manage proper removal of cars by enclosing the counters with the boolean set
+		// in the CarControl class
 		removeCarSem.P();
+		
 		if(no / 5 == 0) {
 			countUp--;
 		} else {

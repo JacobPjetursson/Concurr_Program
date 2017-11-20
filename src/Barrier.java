@@ -14,7 +14,6 @@ public class Barrier {
 	}
 	public synchronized void sync(Semaphore removeCarSem) throws InterruptedException {
 		barrierCounter++;
-//		System.out.println(barrierCounter);
 		removeCarSem.V();
 		while(barrierCounter != amountOfCars && !release) {
 			wait();
