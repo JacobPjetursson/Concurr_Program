@@ -26,12 +26,17 @@ public class CarTest extends Thread {
                 sleep(3000);
                 cars.stopAll();
                 break;
+            // Set a fast speed for all cars 
             case 1:
+            	cars.println("Setting fast speed for all cars");
             	cars.startAll();
                 for (int i = 1; i < 9; i++) {
                     cars.setSpeed(i, 15);
                 }
+                break;
+            // Remove and restore random cars
             case 2:
+            	cars.println("Removing and restoring cars at random");
             	cars.startAll();
             	for (int i = 1; i < 9; i++) {
             		cars.setSpeed(i, 15);
