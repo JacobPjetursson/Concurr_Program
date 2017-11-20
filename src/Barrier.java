@@ -2,7 +2,7 @@
 public class Barrier {
 
 	Semaphore syncSem;
-	Semaphore counterSem;
+	Semaphore counterMutex;
 	Semaphore barrierSem;
 	boolean isBarrierOn;
 	int barrierCounter;
@@ -13,31 +13,31 @@ public class Barrier {
 		 * and one for stopping the cars at the barrier (syncSem)
 		 */
 		syncSem = new Semaphore(0);
-		counterSem = new Semaphore(1);
+		counterMutex = new Semaphore(1);
 		barrierSem = new Semaphore(9);
 		isBarrierOn = false;
 		barrierCounter = 0;
 	}
 	public void sync() throws InterruptedException {
 		barrierSem.P();
-		counterSem.P();
+		
+		counterMutex.P();
 		barrierCounter++;
 		if(barrierCounter == 9) {
 			syncSem.V();
 		}
-		counterSem.V();
+		counterMutex.V();
+		
 		syncSem.P();
 		
-		counterSem.P();
+		counterMutex.P();
 		barrierCounter--;
-		
 		syncSem.V();
-		
 		if(barrierCounter == 0) { // Re-initiate the semaphores so the barrier can be reused.
 			syncSem.P();
 			for(int i = 0; i<9;i++) barrierSem.V();
 		}
-		counterSem.V();
+		counterMutex.V();
 	}
 	
 	
