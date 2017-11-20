@@ -58,9 +58,9 @@ class Car extends Thread {
     
     // Own fields
     boolean removed;
-    boolean inBetween;
     boolean inAlley;
     boolean atBarrier;
+    Semaphore removeCarSem;
 
     public Car(int no, CarDisplayI cd, Gate g) {
     	
@@ -71,9 +71,9 @@ class Car extends Thread {
         barpos = cd.getBarrierPos(no);  // For later use
         
         removed = false;
-        inBetween = false;
         inAlley = false;
         atBarrier = false;
+        removeCarSem = new Semaphore(1);
 
         col = chooseColor();
 
@@ -87,8 +87,9 @@ class Car extends Thread {
 
     public synchronized void setSpeed(int speed) { 
         if (no != 0 && speed >= 0) {
-        	this.speed = speed;
             basespeed = speed;
+            // This line is added so that the speed variable can be altered when it is driving.
+            this.speed = speed;
         }
         else
             cd.println("Illegal speed settings");
@@ -151,34 +152,41 @@ class Car extends Thread {
                     speed = chooseSpeed();
                 }
                 newpos = nextPos(curpos);
+                
                 // Own code
                 if(atAlleyEntrance()) {
-                	CarControl.alley.enter(no);
+                	CarControl.alley.enter(no, removeCarSem);
                 	inAlley = true;
+                	removeCarSem.V();
                 }
                 if(atAlleyExit()) {
-                	CarControl.alley.leave(no);
+                	CarControl.alley.leave(no, removeCarSem);
                 	inAlley = false;
+                	removeCarSem.V();
                 }
                 
                 if(atBarrierEntrance()) {
+                	removeCarSem.P();
                 	atBarrier = true;
-                	CarControl.barrier.sync();
+                	CarControl.barrier.sync(removeCarSem);
+                	atBarrier = false;
+                	removeCarSem.V();
                 }
-                atBarrier = false;
-
                 CarControl.sems[newpos.row][newpos.col].P();
-                inBetween = true;
+                // BUG HER HVIS SLEEP INDSÆTTES
+                removeCarSem.P();
+
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
                 sleep(speed());
+
                 cd.clear(curpos,newpos);
                 cd.mark(newpos,col,no);
                 CarControl.sems[curpos.row][curpos.col].V();
                 
                 curpos = newpos;
-                
-                inBetween = false;
+
+                removeCarSem.V();
             }
 
         } catch (Exception e) {
@@ -252,23 +260,26 @@ public class CarControl implements CarControlI{
     		cd.println("The car is already removed!");
     		return;
     	}
+    	
+    	try {
+			cars[no].removeCarSem.P();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	
     	cars[no].interrupt();
-    	Pos newpos = cars[no].newpos;
     	Pos curpos = cars[no].curpos;
     	
-    	if(cars[no].inBetween) {
-    		sems[curpos.row][curpos.col].V();
-    		sems[newpos.row][newpos.col].V();
-    		cd.clear(curpos, newpos);
-    	} else {
-    		sems[curpos.row][curpos.col].V();
-    		cd.clear(curpos);
-    	}
+		sems[curpos.row][curpos.col].V();
+		cd.clear(curpos);
+    	
     	if(cars[no].inAlley) {
     		alley.removeCar(no);
     	}
     	barrier.removeCar(cars[no].atBarrier);
     	cars[no].removed = true;
+    	
+    	cars[no].removeCarSem.V();
     }
 
     public void restoreCar(int no) { 

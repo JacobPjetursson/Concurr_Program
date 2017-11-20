@@ -12,13 +12,14 @@ public class Barrier {
 		amountOfCars = 9;
 
 	}
-	public synchronized void sync() throws InterruptedException {
+	public synchronized void sync(Semaphore removeCarSem) throws InterruptedException {
 		barrierCounter++;
 //		System.out.println(barrierCounter);
-
+		removeCarSem.V();
 		while(barrierCounter != amountOfCars && !release) {
 			wait();
 		}
+		removeCarSem.P();
 		if(barrierCounter == amountOfCars) {
 			release = true;
 			notifyAll();
