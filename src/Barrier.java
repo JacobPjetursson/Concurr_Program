@@ -1,43 +1,43 @@
 
 public class Barrier {
 
+	Semaphore syncSem;
+	Semaphore counterMutex;
 	Semaphore barrierSem;
-	Semaphore counterSem;
-	Semaphore gateSem;
 	boolean isBarrierOn;
 	int barrierCounter;
 	int prevCounter;
 	public Barrier () {
 		/* We use 3 semaphores in total, 1 for managing critical sections around the barrier counter (counterSem),
-		 * one for forbidding cars from entering the barrier before all cars have left it (gateSem),
-		 * and one for stopping the cars at the barrier (barrierSem)
+		 * one for forbidding cars from entering the barrier before all cars have left it (barrierSem),
+		 * and one for stopping the cars at the barrier (syncSem)
 		 */
-		barrierSem = new Semaphore(0);
-		counterSem = new Semaphore(1);
-		gateSem = new Semaphore(9);
+		syncSem = new Semaphore(0);
+		counterMutex = new Semaphore(1);
+		barrierSem = new Semaphore(9);
 		isBarrierOn = false;
 		barrierCounter = 0;
 	}
 	public void sync() throws InterruptedException {
-		gateSem.P();
-		counterSem.P();
-		barrierCounter++;
-		if(barrierCounter == 9) {
-			barrierSem.V();
-		}
-		counterSem.V();
 		barrierSem.P();
 		
-		counterSem.P();
-		barrierCounter--;
-		
-		barrierSem.V();
-		// All cars are allowed to enter the barrier again
-		if(barrierCounter == 0) {
-			barrierSem.P();
-			for(int i = 0; i<9;i++) gateSem.V();
+		counterMutex.P();
+		barrierCounter++;
+		if(barrierCounter == 9) {
+			syncSem.V();
 		}
-		counterSem.V();
+		counterMutex.V();
+		
+		syncSem.P();
+		
+		counterMutex.P();
+		barrierCounter--;
+		syncSem.V();
+		if(barrierCounter == 0) { // Re-initiate the semaphores so the barrier can be reused.
+			syncSem.P();
+			for(int i = 0; i<9;i++) barrierSem.V();
+		}
+		counterMutex.V();
 	}
 	
 	
@@ -45,7 +45,7 @@ public class Barrier {
 	public void on() {
 		if(!isBarrierOn) {
 			isBarrierOn = true;
-			barrierSem = new Semaphore(0);
+			syncSem = new Semaphore(0);
 		}
 	}
 	
@@ -53,7 +53,7 @@ public class Barrier {
 		if(isBarrierOn) {
 			int i = barrierCounter;
 			while(i>0){
-				barrierSem.V();
+				syncSem.V();
 				i--;
 			}	
 		}
