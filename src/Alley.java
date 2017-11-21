@@ -19,7 +19,8 @@ public class Alley {
 	}
 
 	public void enter(int no) throws InterruptedException {		
-		// For car no 1,2,3,4. We set the top semaphore, so that cars entering at bottom can't enter
+		// For car no 1,2,3,4. We set the bottom semaphore, so that cars entering at bottom can't enter
+		
 		if(no/5 == 0) {
 			alleySemTop.P();
 			countSem.P();
