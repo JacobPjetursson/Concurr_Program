@@ -59,7 +59,7 @@ class Car extends Thread {
     // Own fields
     boolean removed;
     boolean inAlley;
-    boolean atBarrier;
+    
     Semaphore removeCarSem;
 
     public Car(int no, CarDisplayI cd, Gate g) {
@@ -72,7 +72,6 @@ class Car extends Thread {
         
         removed = false;
         inAlley = false;
-        atBarrier = false;
         removeCarSem = new Semaphore(1);
 
         col = chooseColor();
@@ -166,12 +165,10 @@ class Car extends Thread {
                 }
                 
                 if(atBarrierEntrance()) {
-                	removeCarSem.P();
-                	atBarrier = true;
-                	CarControl.barrier.sync(removeCarSem);
-                	atBarrier = false;
-                	removeCarSem.V();
+                	
+                	CarControl.barrier.sync();
                 }
+                
                 CarControl.sems[newpos.row][newpos.col].P();
                 /* The program breaks down by inserting a sleep at this line. The reason is explained thoroughly in the report.
                  * removeCarSem is to handle proper removal of cars.
@@ -197,7 +194,7 @@ class Car extends Thread {
         	if(inAlley) {
         		CarControl.alley.removeCar(no);
         	}
-        	CarControl.barrier.removeCar(atBarrier);
+        	
         	removed = true;
         }
     }
@@ -278,7 +275,7 @@ public class CarControl implements CarControlI{
     public void restoreCar(int no) { 
     	if(cars[no].removed) {
     		cars[no] = new Car(no,cd,gate[no]);
-    		barrier.addCar();
+    		
     		cars[no].start();
     	} else {
     		cd.println("You can't restore an active car!");
