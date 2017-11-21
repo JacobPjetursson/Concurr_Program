@@ -35,11 +35,11 @@ public class Barrier {
 		}
 		
 		barrierCounter2++;
-		removeCarSem.V();
+		
 		while(barrierCounter2 != amountOfCars && !release2) {
 			wait();
 		}
-		removeCarSem.P();
+		
 		if(barrierCounter2 == amountOfCars) {
 			release2 = true;
 			notifyAll();
@@ -79,7 +79,6 @@ public class Barrier {
 	public synchronized void removeCar(boolean atBarrier) {
 		if(atBarrier && isBarrierOn) {
 			barrierCounter1--;
-			barrierCounter2--;
 		}
 		amountOfCars--;
 		notifyAll();
