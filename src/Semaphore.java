@@ -18,13 +18,8 @@ public class Semaphore {
 
     public synchronized void P() 
     throws InterruptedException {
-        while (s == 0) { 
-        	
-        	wait();
-        }
-        
+        while (s == 0) wait();
         s--;
-        
     }
 
     public synchronized void V() {
