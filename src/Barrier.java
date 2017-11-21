@@ -16,26 +16,27 @@ public class Barrier {
 		amountOfCars = 9;
 
 	}
+	//This function is an implementation of a two-phased barrier, but in a monitor setting.
+	//Therefore almost have the exact same code twice, being the two phases.
 	public synchronized void sync(Semaphore removeCarSem) throws InterruptedException {
-		barrierCounter1++;
-		
+		barrierCounter1++;		//Phase 1
 		removeCarSem.V();
 		while(barrierCounter1 != amountOfCars && !release1) {
 			wait();
 		}
+		// removeCarSem is here to manage proper removal of cars by enclosing the counters with the boolean set
+		// in the CarControl class
 		removeCarSem.P();
 		if(barrierCounter1 == amountOfCars) {
 			release1 = true;
 			notifyAll();
-
 		} 
 		barrierCounter1--;
 		if(barrierCounter1 == 0) {
 			release1 = false;
 		}
 		
-		barrierCounter2++;
-		
+		barrierCounter2++;		//Phase 2
 		while(barrierCounter2 != amountOfCars && !release2) {
 			wait();
 		}

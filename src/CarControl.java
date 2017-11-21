@@ -174,7 +174,7 @@ class Car extends Thread {
                 }
                 CarControl.sems[newpos.row][newpos.col].P();
                 /* The program breaks down by inserting a sleep at this line. The reason is explained thoroughly in the report.
-                 * The semaphore below is to handle proper removal of cars.
+                 * removeCarSem is to handle proper removal of cars.
                  */
                 removeCarSem.P();
                 cd.clear(curpos);
