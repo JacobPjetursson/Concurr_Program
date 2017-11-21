@@ -191,11 +191,14 @@ class Car extends Thread {
             }
 
         } catch (Exception e) {
-        	/*
-            cd.println("Exception in Car no. " + no);
-            System.err.println("Exception in Car no. " + no + ":" + e);
-            e.printStackTrace();
-            */
+        	// Below this is all cleanup code to make sure the interrupts are handled properly.
+    		CarControl.sems[curpos.row][curpos.col].V();
+    		cd.clear(curpos);
+        	if(inAlley) {
+        		CarControl.alley.removeCar(no);
+        	}
+        	CarControl.barrier.removeCar(atBarrier);
+        	removed = true;
         }
     }
 }
@@ -267,18 +270,7 @@ public class CarControl implements CarControlI{
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-    	
     	cars[no].interrupt();
-    	Pos curpos = cars[no].curpos;
-    	// Below this is all cleanup code to make sure the interrupts are handled properly.
-		sems[curpos.row][curpos.col].V();
-		cd.clear(curpos);
-    	
-    	if(cars[no].inAlley) {
-    		alley.removeCar(no);
-    	}
-    	barrier.removeCar(cars[no].atBarrier);
-    	cars[no].removed = true;
     	
     	cars[no].removeCarSem.V();
     }

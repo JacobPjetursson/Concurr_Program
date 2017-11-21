@@ -21,7 +21,7 @@ public class Barrier {
 	public synchronized void sync(Semaphore removeCarSem) throws InterruptedException {
 		barrierCounter1++;		//Phase 1
 		removeCarSem.V();
-		while(barrierCounter1 != amountOfCars && !release1) {
+		while(barrierCounter1 != amountOfCars && !release1 && isBarrierOn) {
 			wait();
 		}
 		// removeCarSem is here to manage proper removal of cars by enclosing the counters with the boolean set
@@ -37,7 +37,7 @@ public class Barrier {
 		}
 		
 		barrierCounter2++;		//Phase 2
-		while(barrierCounter2 != amountOfCars && !release2) {
+		while(barrierCounter2 != amountOfCars && !release2 && isBarrierOn) {
 			wait();
 		}
 		
