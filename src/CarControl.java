@@ -141,15 +141,15 @@ class Car extends Thread {
                 }
                 newpos = nextPos(curpos);
                 // Own code here
+                
                 if(atAlleyEntrance()) {
                 	CarControl.alley.enter(no);
                 }
-                if(atAlleyExit()) {
-                	CarControl.alley.leave(no);
-                }
-                
                 if(atBarrierEntrance()) {
                 	CarControl.barrier.sync();
+                }
+                if(atAlleyExit()) {
+                	CarControl.alley.leave(no);
                 }
                 // Before doing the movement below, we set the semaphore corresponding to the new position of the car
                 CarControl.sems[newpos.row][newpos.col].P();

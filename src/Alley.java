@@ -19,15 +19,17 @@ public class Alley {
 	}
 
 	public void enter(int no) throws InterruptedException {		
-		// For car no 1,2,3,4. We set the top semaphore, so that cars entering at bottom can't enter
+		// For car no 1,2,3,4. We set the bottom semaphore, so that cars entering at bottom can't enter	
 		if(no/5 == 0) {
 			alleySemTop.P();
 			countMutex.P();
 			if(countUp > 0) {
 				countUp++;
+				System.out.println(countUp + "/" + countDown);
 			} else {
 				alleySemBot.P();
 				countUp++;
+				System.out.println(countUp + "/" + countDown);
 			}
 			countMutex.V();
 			alleySemTop.V();
@@ -37,9 +39,11 @@ public class Alley {
 			countMutex.P();
 			if(countDown>0) {
 				countDown++;
+				System.out.println(countUp + "/" + countDown);
 			} else {
 				alleySemTop.P();
 				countDown++;
+				System.out.println(countUp + "/" + countDown);
 			}
 			countMutex.V();
 			alleySemBot.V();
@@ -50,21 +54,19 @@ public class Alley {
 		// Here we count down the cars leaving the alley and release the relevant semaphores if the counters reach 0.
 		countMutex.P();
 		if(no/5 == 0) {
-			if(countUp > 1) {
-				countUp--;
-			}
-			else {
+			countUp--;
+			if(countUp == 0) {
 				alleySemBot.V();
-				countUp--;
+				System.out.println(countUp + "/" + countDown);
 			}
 		} else {
-			if(countDown > 1) {
-				countDown--;
-			}
-			else {
+			countDown--;
+			if(countDown == 0) {
 				alleySemTop.V();
-				countDown--;
+				System.out.println(countUp + "/" + countDown);
 			}
+			
+
 		}
 		countMutex.V();
 	}
