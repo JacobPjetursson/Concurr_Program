@@ -31,7 +31,7 @@ public class CarTest extends Thread {
             	cars.println("Setting fast speed for all cars");
             	cars.startAll();
                 for (int i = 1; i < 9; i++) {
-                    cars.setSpeed(i, 15);
+                    cars.setSpeed(i, 1);
                 }
                 break;
             // Remove and restore random cars
