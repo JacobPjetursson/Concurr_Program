@@ -27,9 +27,7 @@ public class Barrier {
 		if(barrierCounter1 == amountOfCars) {
 			release1 = true;
 			notifyAll();
-			if(shutdown) {
-				isBarrierOn = false;
-			}
+
 		} 
 		barrierCounter1--;
 		if(barrierCounter1 == 0) {
