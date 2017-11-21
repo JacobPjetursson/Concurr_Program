@@ -39,7 +39,7 @@ public class CarTest extends Thread {
             	cars.println("Removing and restoring cars at random");
             	cars.startAll();
             	for (int i = 1; i < 9; i++) {
-            		cars.setSpeed(i, 15);
+            		cars.setSpeed(i, 1);
             	}
             	for (int j = 0; j < 100; j++) {
             		sleep(300);
@@ -49,7 +49,7 @@ public class CarTest extends Thread {
             		sleep(300);
             		
             		cars.restoreCar(rand);
-            		cars.setSpeed(rand, 15);
+            		cars.setSpeed(rand, 1);
             	}
             	break;
             case 19:
