@@ -39,7 +39,7 @@ class Gate {
 
 class Car extends Thread {
 	
-    int basespeed = 75;             // Rather: degree of slowness
+    int basespeed = 1;             // Rather: degree of slowness
     int variation =  50;             // Percentage of base speed
     
 
@@ -177,7 +177,6 @@ class Car extends Thread {
                  * The semaphore below is to handle proper removal of cars.
                  */
                 removeCarSem.P();
-
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
                 sleep(speed());
