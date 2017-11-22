@@ -58,8 +58,6 @@ public class Barrier {
 	public synchronized void on() {
 		if(!isBarrierOn) {
 			isBarrierOn = true;
-			release1 = false;
-			release2 = false;
 		}
 		shutdown = false;
 	}
@@ -67,8 +65,6 @@ public class Barrier {
 	public synchronized void off() {
 		if(isBarrierOn) {
 			isBarrierOn = false;
-			release1 = true;
-			release2 = true;
 			notifyAll();
 		}
 	}
