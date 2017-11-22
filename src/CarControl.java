@@ -284,7 +284,6 @@ public class CarControl implements CarControlI{
     		cd.println("You can't restore an active car!");
     	}
     }
-
     /* Speed settings for testing purposes */
 
     public void setSpeed(int no, int speed) { 
