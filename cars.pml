@@ -6,11 +6,12 @@
 	entrance location, which matched our java code better
  */
 
-pid top1, top2, bot1, bot2;
+pid top1, top2, top3, top4, bot1, bot2, bot3, bot4;
 byte TOP = 1;
 byte BOT = 0;
+
 byte semTop = 1;
-byte semBot = 1;
+byte semAlley = 1;
 byte semCounter = 1;
 
 int inAlleyTop = 0;
@@ -19,23 +20,17 @@ int inAlleyBot = 0;
 init {
 	atomic {
 		top1 = run Car(TOP);
-		bot1 = run Car(BOT);
 		top2 = run Car(TOP);
+		bot1 = run Car(BOT);
 		bot2 = run Car(BOT);
-
 	}  
 }
 
 inline P(semaphore) {
-	atomic{
-		if 
-		:: (semaphore > 0) -> semaphore--;
-		:: (semaphore <= 0) -> break;
-		fi;
-	}
+	atomic{semaphore > 0 -> semaphore--;}
 }
 inline V(semaphore) {
-	atomic{semaphore++}
+	atomic{semaphore++;}
 }
 
 active proctype Car (byte loc) 
@@ -52,24 +47,32 @@ entry:
 			if
 			:: (inAlleyTop > 0) ->
 				inAlleyTop++;
+				V(semCounter);
+				V(semTop);
 			:: (inAlleyTop <= 0) ->
-				P(semBot);
+				V(semCounter);
+				P(semAlley);
+				V(semTop);
+				
+				P(semCounter);
 				inAlleyTop++;
+				V(semCounter);
 			fi;
-			V(semCounter);
-			V(semTop);
+
 		:: (loc == BOT) ->
-			P(semBot);
 			P(semCounter);
 			if
 			:: (inAlleyBot > 0) ->
 				inAlleyBot++;
+				V(semCounter);
 			:: (inAlleyBot <= 0) ->
-				P(semTop);
+				V(semCounter);
+				P(semAlley);
+
+				P(semCounter);
 				inAlleyBot++;
+				V(semCounter);
 			fi;
-			V(semCounter);
-			V(semBot);
 		fi;
 
 crit:	
@@ -82,18 +85,24 @@ exit:
 			:: (inAlleyTop > 1) ->
 				inAlleyTop--;
 			:: (inAlleyTop <= 1) ->
-				V(semBot);
+				V(semAlley);
 				inAlleyTop--;
-			fi;
+			fi
 		:: (loc == BOT) ->
 			if
 			:: (inAlleyBot > 1) ->
 				inAlleyBot--;
 			:: (inAlleyBot <= 1) ->
-				V(semTop);
+				V(semAlley);
 				inAlleyBot--;
-			fi;
+			fi
+			
 		fi;
 		V(semCounter);
 	od;
 }
+
+//ltl fair1 { [] ( (Car[top1]@entry) -> <>  (Car[top1]@crit) ) } 
+//ltl fair2 { [] ( (Car[top2]@entry) -> <>  (Car[top2]@crit) ) }
+//ltl fair3 { [] ( (Car[bot1]@entry) -> <>  (Car[bot1]@crit) ) }
+//ltl fair4 { [] ( (Car[bot2]@entry) -> <>  (Car[bot2]@crit) ) }
