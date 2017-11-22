@@ -57,22 +57,22 @@ public class Alley {
 		if(no/5 == 0) {
 			if(countUp > 1) {
 				countUp--;
-				System.out.println(countUp + "/" + countDown);
+				
 			}
 			else {
 				alleySem.V();
 				countUp--;
-				System.out.println(countUp + "/" + countDown);
+				
 			}
 		} else {
 			if(countDown > 1) {
 				countDown--;
-				System.out.println(countUp + "/" + countDown);
+				
 			}
 			else {
 				alleySem.V();
 				countDown--;
-				System.out.println(countUp + "/" + countDown);
+				
 			}
 		}
 		countMutex.V();
